@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>javascript坏味道</title>
+    <script>
+    //能用 === 避免用 ==
+    var zero = 0;
+    if(zero === false) {
+       console.log('go'); //不执行
+    }
+     //避免用eval  解析JSON时 用javascript内置方法解析JSON ，JSON.parse 或者 JSON.org库
+     //避免在setTimeout setInterval Function构造函数 使用字符串（这个与EVEL类似）
+
+     //反面
+     setTimeout("myFunc", 1000);
+     setInterval('myFunc(1, 2, 3)', 1000);
+    //正确
+     setTimeout(myFunc,1000);
+     setTimeout(function(){
+         myFunc(1, 2, 3);
+     },1000);
+
+    function   myFunc(){
+        var i = arguments.length;
+        for(;i--;){
+            console.log(arguments[i]);
+        }
+    }
+    //如果必须用eval 可以考虑用new Function()替代 或者在 一个立即运行的函数内使用
+    // 这样可以阻止全局变量的自动封装
+    console.log(typeof un); //undefined
+    console.log(typeof deux); //undefined
+    console.log(typeof trois); //undefined
+
+    var jsString = "var un = 1; console.log(un);";
+    eval(jsString); //log:1
+
+    jsString = "var deux = 2; console.log(deux);"
+    new Function(jsString)(); //log:2
+
+    jsString = "var trois = 3; console.log(trois);";
+    (function(){
+        eval(jsString); //log:3
+    });
+        console.log(typeof un); //number  // 全局作用
+        console.log(typeof deux); //undefined //局部作用域
+        console.log(typeof trois); //undefined //局部作用域
+
+    //eval 可以访问和修改它(外部)所在作用域的变量
+    //Function 只能访问
+    (function(){
+        var local = 1;
+        eval("local = 3; console.log(local)"); // "3"
+        console.log(local); //3
+    }());
+    (function(){
+        var local = 1;
+        Function("console.log(typeof local);")(); //undefined Function 等于 new Function
+                                                  //所有在Functoin(xxx)  在XXX中出现的变量 都被"var"过
+                                                  //和 sum(x,y)｛ xxx ｝中的x,y类似
+        console.log(local);
+    }());
+
+    </script>
+</head>
+<body>
+
+</body>
+</html>

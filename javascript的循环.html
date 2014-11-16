@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>javascript循环 与 枚举</title>
+    <script>
+        //循环 for 可以保持数组的次序 作用在数组上
+        //枚举 for in 作用在对象上 不保证次序
+
+        //对比
+        //例子1
+        myarray = [1, 2, 3, 4, 5];
+        function looper(){
+            for(var i = 0; i < myarray.length; i++){
+                console.log(i);
+            }
+        }
+        looper();
+
+        function looper1(){
+            //改进1 减少重复计算myarray长度
+            for(var i = 0, max = myarray.length; i < max; i++){
+                console.log(i);
+            }
+
+        }
+        looper1();
+
+        //改进2 //减少一个变量 与0对比的效率高
+        function looper2(){
+            for(var i = myarray.length; i--;){
+                console.log(i);
+            }
+        }
+        looper2();
+
+        //同改进2
+        function looper3(){
+            var i = myarray.length;
+            while( i-- ){
+                console.log(i);
+            }
+
+        }
+        looper3();
+
+
+
+    </script>
+</head>
+<body>
+
+</body>
+</html>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>javascript 立即执行函数</title>
+    <script>
+        //原形小试
+        var Calculator = function (decimalDigits, tax){
+          this.decimalDigits = decimalDigits;
+          this.tax = tax;
+        };
+        Calculator.prototype = {
+           add: function(x, y) {
+               return x + y
+           },
+           subtract: function(x, y) {
+               return x - y;
+           }
+        };
+        var calculator = new Calculator();
+        console.log(calculator.add(1, 1)); //2
+        console.log(calculator.subtract(1, 2)); // -1
+
+        //原型使用方式2
+        Calculator.prototype = function () {} ();
+        Calculator.prototype = function () {
+            add = function (x, y){
+                return x + y;
+            },
+            subtract = function (x , y){
+                return x - y;
+            }
+            return {
+                add: add,
+                subtract:subtract
+            }
+        }();
+        Calculator.prototype.constructor = Calculator; //恢复被覆盖的构造函数
+        Calculator.prototype.hello = function() { //扩展原型属性
+            console.log('hello');
+        };
+        Calculator.prototype.hehe = function() { //扩展原型属性
+           console.log('hehe');
+        };
+        var calculator = new Calculator();
+        console.log(calculator.add(3, 3)); //6
+        console.log(calculator.subtract(1, 2)); //-1
+        calculator.hehe(); //hehe
+
+
+
+        //将对象设置在另外一个对象的原型链上
+        var BaseCalculator = function() {
+          this.decimalDigits = 2;
+        };
+        BaseCalculator.prototype = {
+            add: function(x, y) {
+                return x + y;
+            },
+            substract: function(x, y) {
+                return x - y;
+            }
+        };
+
+        var Calculator = function () {
+            this.tax =1;
+        };
+        Calculator.prototype = new BaseCalculator();//原型链指向 BaseCalcuator
+        Calculator.prototype.constructor = Calculator; //恢复被覆盖的构造函数属性
+        var calculator = new Calculator();
+        console.log( calculator.add(1, 1) ); //2
+        console.log( calculator.decimalDigits ); //2
+
+        //不继承构造函数
+        Calculator.prototype = BaseCalculator.prototype;
+        Calculator.prototype.constructor = Calculator; //恢复被覆盖的构造函数属性
+        var calculator = new Calculator();
+        console.log(calculator.decimalDigits); //undefined
+
+        //底层扩展上游子
+
+        function foo() {
+            this.add = function(x, y) {
+                return x + y;
+            }
+        }
+        foo.prototype.add = function(x, y){
+            return x + y + 10;
+        }
+        Object.prototype.substract = function (x, y){
+            return x - y;
+        }
+        var f = new foo();
+        console.log(f.add(1, 3)); //4 得到4 而不是14 先搜索自身，再搜索原形,再搜父级的原型链
+        console.log(f.substract(1, 2)); // -1
+        //也是我想强调的，就是属性在查找的时候是先查找自身的属性，如果没有再查找原型，
+        // 再没有，再往上走，一直插到Object的原型上，
+        // 所以在某种层面上说，用 for in语句遍历属性的时候，效率也是个问题。
+
+        //hasOwnProperty函数：
+       // hasOwnProperty是Object.prototype的一个方法，它可是个好东西，
+       // 他能判断一个对象是否包含自定义属性而不是原型链上的属性，
+       // 因为hasOwnProperty 是 JavaScript 中唯一一个处理属性但是不查找原型链的函数。
+       Object.prototype.bar = 1;
+        var foo = {goo: undefined};
+        foo.bar;//1
+        'bar' in foo //true
+        foo.hasOwnProperty('bar'); //false;
+        foo.hasOwnProperty('goo'); //true
+
+        //只有 hasOwnProperty 可以给出正确和期望的结果，这在遍历对象的属性时会很有用。
+        // 没有其它方法可以用来排除原型链上的属性，而不是定义在对象自身上的属性。
+
+        //但有个恶心的地方是：JavaScript 不会保护 hasOwnProperty 被非法占用，
+        // 因此如果一个对象碰巧存在这个属性，就需要使用外部的 hasOwnProperty 函数来获取正确的结果。
+         var foo = {
+             hasOwnProperty: function(){
+                 return false;
+             },
+             bar: 'Here be dragons'
+         };
+          foo.hasOwnProperty('bar'); //总是返回 false
+        //被覆盖时 我们要使用"外部"的 hasOwnProperty
+        var ret = {}.hasOwnProperty.call(foo, 'bar');
+        console.log(ret); //true
+
+        Object.prototype.bar = 2;
+        var foo = {moo: 2};
+        for(var i in foo) {
+            if (foo.hasOwnProperty(i)) {
+               console.log(i); //值输出 2
+            }
+        }
+
+        for(var i in foo) {
+            console.log(i) //把原型链上的都打印，会打印好多坨
+        }
+
+    </script>
+</head>
+<body>
+<span id="eq"></span>
+</body>
+</html>

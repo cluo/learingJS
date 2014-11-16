@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>javascript 函数声明与函数表达式</title>
+    <script>
+    //函数声明 与 函数
+    //函数声明定义: function 函数名（参数：可选）｛函数体｝
+    //函数表达式 : function 函数名（可选）（参数可选）｛函数体｝
+    //          1.不声明函数名一定是函数，它肯定是表达式
+    //          2.function fun(){} 包含在一个函数体内,或者位于程序的最顶部，那它就是一个函数声明
+    //          3.function fun(){} 如果是赋值表达的一部分 它就是 表达式
+    //          4.被分组操作符()包含,它内部只能包含表达式 （function foo(){}）
+
+    //函数声明和表达式的差别
+    //函数声明会在任何表达式被即系之前先被解析和求职，
+    // 即使你的声明代码在代码的最后一行,它也会在同作用域的第一个表达式之前被解析/求值
+    //函数语句不是在变量初始化期间声明的，而是运行时声明的 与函数表达式一样，
+    // 不过函数语句的标识符一旦声明能在函数整个作用域生效
+    //标识符的有效性正是导致 函数语句与函数表达式不同的关键所在
+    alert(fn()); //表达式执行前 fn已经被声明
+    function fn(){
+        return 'hello world';
+    }
+
+
+    //在语句｛｝内 最好用函数函数表达式，因为函数声明在语句内使用没有被标准化,不同环境表现不一样
+    //反面
+    if(true){
+        function foo(){
+            return 'first';
+        }
+    }else{
+        function foo(){
+            return 'second';
+        }
+    }
+    foo();
+
+    //应该
+    var foo;
+    if(true){
+        foo = function(){
+          return 'first';
+        };
+    }else{
+        foo = function(){
+            return 'second';
+        };
+    }
+    foo();
+    //函数声明只能出现在程序或函数体内,从句法上他们出现在block块 ({...})中，例如不能出现在 if while for语句中
+    //block块只能包含statement（表达式），而不能包含函数声明这样的源元素；
+    //规范明确规定了 表达式不能以function开头，函数表达式也不能出现在statement 或block块中
+    //因为block块 就是由statement语句构成
+
+
+
+
+
+
+    function foo(){} //声明
+    var bar = function foo(){}; //表达式 它是赋值表达式的一部分
+    new function bar(){}; //表达式 因为它是new表达式
+    (function(){
+       function bar(){} //声明 它是函数体的一部分
+    })();
+
+    function foo(){} //函数声明
+    (function foo(){});//函数表达式,包含在分组操作符内
+
+//    try{
+//        (var x = 5); //error: 分组操作符,只能包含表达式 不能包含语句:这里的var 就是语句
+//    }catch(err){
+//        //SyntaxError
+//        console.log('报错');
+//    }
+//
+    //eval('('+json+')'); 中的分组操作符就是把 ｛｝解析成表达式，而不是代码语句快
+
+//    try{
+//        {"x":5}; //error｛｝被解析成了语句快
+//    }catch(err){
+//        console.log(err);
+//    }
+
+//   ({"x" : 5}); //error 对象不能执行  分组操作符号强制将 ｛｝作为对象字面量来解析
+
+
+    //如何避免不兼容
+    //反面
+    typeof dick; //undefined
+    if(true){
+        function dick(){ return 1; } // 声明后在整个作用域生效
+    }else{
+        function dick(){ return 2; } //从来不会走到这里 不生效
+    }
+    typeof dick; //'function'
+    //正面
+    var foo;
+    if(true){
+        foo = function foo(){ return 1; };
+    }else{
+        foo = function foo() { return 2; };
+    }
+
+
+    //函数语句和函数声明的字符串表示类似
+    if(true){
+        function hello(){ return 1; }
+    }
+    String(hello);// function foo(){ return 1; }
+
+    //函数覆盖
+    var chunling = function cluo(){
+        console.log('表达式:');
+    };
+
+    function chunling(){
+        console.log('函数声明:');
+    }
+    chunling(); //表达式:cluo 函数声明 被同名函数表达式覆盖了
+
+
+
+
+    //表达式 函数名的作用域 与作用
+    var cFun = function cluo(){
+       return typeof cluo; //foo 表达式的函数标识符只在函数内部作域有效
+    };
+    //foo 在外部用是不可见的
+    console.log(typeof cluo); //undefined
+    console.log(cFun()); //function
+
+    //调试器中的函数名
+    function hehe(){
+        return bar();
+    }
+    function bar(){
+        return baz();
+    }
+    function baz(){
+        debugger;
+    }
+    hehe();
+    //baz bar foo
+
+
+    //遵从严格模式
+    // 1) 使用独立的作用域包含声明
+    var addEvent = (function(){
+
+        var docEl = document.documentElement;
+
+        // 2) 声明要引用函数的变量
+        var fn;
+
+        if (docEl.addEventListener) {
+
+            // 3) 有意给函数一个描述性的标识符
+            fn = function addEvent(element, eventName, callback) {
+                element.addEventListener(eventName, callback, false);
+            }
+        }
+        else if (docEl.attachEvent) {
+            fn = function addEvent(element, eventName, callback) {
+                element.attachEvent('on' + eventName, callback);
+            }
+        }
+        else {
+            fn = function addEvent(element, eventName, callback) {
+                element['on' + eventName] = callback;
+            }
+        }
+
+        // 4) 清除由JScript创建的addEvent函数
+        //    一定要保证在赋值前使用var关键字
+        //    除非函数顶部已经声明了addEvent
+        var addEvent = null;
+
+        // 5) 最后返回由fn引用的函数
+        return fn;
+    })();
+
+    //使用函数内部声明 一个函数来替代 带描述性名字的表达式,
+    // 单多分支时 会创建多个函数
+    var hasClassName = (function(){
+        //定义似有变量
+        var cache = {};
+        //使用函数声明
+        function hasClassName(element, className){
+            var _className = '(?:^|\\s+)' + className + '(?:\\s+|$)';
+            var re = cache[_className] || (cache[_className] = new RegExp(_className));
+            return re.test(element.className);
+        }
+        return hasClassName;
+    })();
+
+
+    //显然，当存在多个分支函数定义时，这个方案就不行了。不过有种模式貌似可以实现：那就是提前使用函数声明来定义所有函数，并分别为这些函数指定不同的标识符：
+
+    var addEvent = (function(){
+
+        var docEl = document.documentElement;
+
+        function addEventListener(){
+            /* ... */
+        }
+        function attachEvent(){
+            /* ... */
+        }
+        function addEventAsProperty(){
+            /* ... */
+        }
+
+        if (typeof docEl.addEventListener != 'undefined') {
+            return addEventListener;
+        }
+        elseif (typeof docEl.attachEvent != 'undefined') {
+            return attachEvent;
+        }
+        return addEventAsProperty;
+    })();
+//虽然这个方案很优雅，但也不是没有缺点。第一，由于使用不同的标识符，导致丧失了命名的一致性。
+// 且不说这样好还是坏，最起码它不够清晰。
+// 有人喜欢使用相同的名字，但也有人根本不在乎字眼上的差别。
+// 可毕竟，不同的名字会让人联想到所用的不同实现。
+// 例如，在调试器中看到attachEvent，我们就知 道addEvent是基于attachEvent的实现。
+// 当 然，基于实现来命名的方式也不一定都行得通。
+// 假如我们要提供一个API，并按照这种方式把函数命名为inner
+// 。那么API用户的很容易就会被相应实现的 细节搞得晕头转向。
+
+    //严格模式不支持
+    (function(x){
+        if(x < 1) return 1;
+        return x * arguments.callee(x - 1);
+    })(10);
+
+    //使用命名函数表达式
+    (function factorial(x){
+        if(x <= 1) return 1;
+        return x * factorial(x-1);
+    })(10);
+
+    //使用函数声明
+    function factorial(x){
+        if(x <= 1) return 1;
+        return x * factorial(x);
+    }
+    factorial(x);
+
+    </script>
+</head>
+<body>
+
+</body>
+</html>

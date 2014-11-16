@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>javascript函数的分段执行</title>
+
+    <script type="text/javascript">
+        function helloworld(){ //分段一
+            console.log('helloworld')
+        }
+        helloworld();//helloworld;
+    </script>
+    <script type="text/javascript"> //分段2
+        function helloworld(){  //不会被其他段的代码覆盖
+            console.log('helloworld1'); //helloworld1
+        }
+        helloworld();  //
+    </script>
+    <script type="text/javascript"> //分段3
+        function cluo(){  //javascript 按段执行,不同段函数不受影响，同一段内的定义函数先被解析，所有函数变量被“置顶初始化为undefined”
+            console.log('cluo');
+        }
+        cluo();  //cluo1
+        function cluo(){
+            console.log('cluo1');
+        }
+        cluo(); //cluo1
+    </script>
+
+    <script type="text/javascript"> //分段4 变量式的函数 从上往下执行
+        var cluo  = function (){
+            console.log('cluo3')
+        }
+        cluo(); //cluo3
+        var cluo = function(){
+            console.log('cluo4');
+        }
+        cluo(); //cluo4
+
+    </script>
+
+</head>
+<body>
+
+</body>
+</html>

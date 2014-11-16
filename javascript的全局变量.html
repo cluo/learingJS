@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>javascript全局变量(如果可能尽可能避免全局变量)</title>
+    <script type="text/javascript">
+        global_name='cluo';
+        console.log(window.global_name);//cluo
+        console.log(window['global_name']); //cluo
+        console.log(this.global_name);//cluo
+        console.log(global_name); //cluo
+    </script>
+
+    <script>
+        //隐式全局变量
+        function sum(x, y){ //函数1
+            result = x + y;  //不推荐:result为全局变量
+            return result;
+        }
+        console.log(sum(1,1),result);// result no define中断（段）执行,其他段依然继续执行
+
+        function sum(x, y){ //覆盖函数1
+          var result = x +y ;
+          return result;
+        }
+        console.log(sum(1,1),result);//没有执到这里
+
+    </script>
+
+    <script>
+        //隐式全局变量
+        function sum(x, y){ //函数1
+            result = x + y;  //不推荐:result为全局变量  [1]
+            return result;
+        }
+        console.log(sum(1,1),result);// 2，2
+
+        function sum1(x, y){ //覆盖函数1
+            var result = x +y ; //局部变量
+            return result;
+        }
+        console.log(sum(1,1),result);//2，2（此处的result为[1]处的result）
+
+    </script>
+
+    <script>
+        function foo(){
+            var a = b = 2; //隐式全局变量  相当于var a = (b =2)
+                          // 赋值函数从左往右执行，b未被定义，为全局变量
+                          //var定义了a
+
+        }
+        foo();
+        console.log(window.b); //2 全局变量b
+    </script>
+
+    <script>
+        function foo(){
+            var a,b;   //定义了a,b
+            a = b =1; //两个局部变量
+        }
+        foo();
+        console.log(a,b)//undefined,2
+
+    </script>
+
+    <script>
+        //全局变量对整个页面的所有段有效
+        console.log(window.b); //2
+        console.log(b); //2 全局变量b
+    </script>
+
+    <script>
+        //隐式全局变量 和  真正全局变量的区别
+        c = 1; //隐式全局变量（没有被var 过的变量） 可以被删除  是window的属性
+        var d = 2; //真正全局变量  （任何函数外的程序中创建） 不能被删除
+        (function(){
+            e = 3; //隐式全局变量
+        });
+        console.log(delete(c)); //true  //隐式全局变量 可以删除
+        console.log(delete(d)) //false //真正全局变量 不可删除
+        console.log(delete(e)) //true  //隐式全局变量
+
+        console.log(typeof c); //undefined //隐式全局变量被删除
+        console.log(typeof  d); //number; //正式全局变量 没有被删除
+        console.log(typeof e); //undefined; //隐式全局变量被删除
+    </script>
+
+    <script>
+        //访问全局对象 在你不知道全局对象名称时的时候
+        var global = (function(){
+            return this;
+        }());
+
+    </script>
+
+    <script>
+        //在一个作用域里用”var“ 声明多个变量
+        // 尽量做到每个变量的”类型“ 在初始复制时便一目了然
+        function foo(){
+            var a = 1,
+                b = 2,
+                sum = a + b,
+                myObject = {},
+                i,
+                j;
+            //function body
+        }
+    </script>
+
+    <script>
+        //函数的任何位置 用var声明的变量 有 hoisting（置顶 声明undefined的作用）
+        //则 在函数的任何位置使用该变量 都被当作已经声明
+        myname = "cluo";
+        function func(){
+            console.log(myname); //undefined
+            var myname =  'cluo1';
+            console.log(myname);
+
+        }
+        func();
+    </script>
+
+
+</head>
+<body>
+
+</body>
+</html>

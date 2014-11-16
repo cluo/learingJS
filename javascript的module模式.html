@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>javascript module模式</title>
+    <script>
+    //module
+    var Calculator = function(eq){
+       var eqCtl = document.getElementById(eq); //私有成员
+       return {
+           //暴露公有成员
+           add:function(x,y){
+               var val = x + y;
+               eqCtl.innerHTML = val;
+           }
+       }
+    };
+    window.onload=function(){
+        var calculator = new Calculator('eq');
+        calculator.add(2,2);
+    };
+
+
+  /*
+     //一些探讨
+    var Calculator = function(eq){
+        var eqCtl = document.getElementById(eq); //私有成员
+        this.world  = function(){
+           console.log('world');
+        };
+        var hello = function(){
+            console.log('hello');
+        };
+        return {
+            //暴露公有成员
+            add:function(x,y){
+                var val = x + y;
+                eqCtl.innerHTML = val;
+            }
+        }
+    };
+    window.onload=function(){
+        var calculator = new Calculator('eq');
+        calculator.add(2,2);
+        //calculator.world() //error:world未定义 它返回的对象里不含有world
+        //Calculator.hello(); //error:hello未定义 它返回的对象不包含.hello
+    };
+
+*/
+
+   // 匿名闭包
+    //匿名闭包是让一切成为可能的基础，而这也是JavaScript最好的特性，
+    // 我们来创建一个最简单的闭包函数，函数内部的代码一直存在于闭包内，
+    // 在整个运行周期内，该闭包都保证了内部的代码处于私有状态。
+
+    (function () {
+        // ... 所有的变量和function都在这里声明，并且作用域也只能在这个匿名闭包里
+        // ...但是这里的代码依然可以访问外部全局的对象
+    }());
+    //注意，匿名函数后面的括号，这是JavaScript语言所要求的，
+    // 因为如果你不声明的话，JavaScript解释器默认是声明一个function函数，有括号，
+    // 就是创建一个函数表达式，也就是自执行，用的时候不用和上面那样在new了，当然你也可以这样来声明：
+
+    (function () {/* 内部代码 */})();
+   // 不过我们推荐使用第一种方式，关于函数自执行，我后面会有专门一篇文章进行详解，这里就不多说了。
+
+        /*
+         引用全局变量
+         JavaScript有一个特性叫做隐式全局变量，不管一个变量有没有用过，
+         JavaScript解释器反向遍历作用域链来查找整个变量的var声明，如果没有找到var，
+         解释器则假定该变量是全局变量，
+         如果该变量用于了赋值操作的话，
+         之前如果不存在的话，解释器则会自动创建它，
+         这就是说在匿名闭包里使用或创建全局变量非常容易，
+         不过比较困难的是，代码比较难管理，
+         尤其是阅读代码的人看着很多区分哪些变量是全局的，哪些是局部的。
+
+         不过，好在在匿名函数里我们可以提供一个比较简单的替代方案，
+         我们可以将全局变量当成一个参数传入到匿名函数然后使用，
+         相比隐式全局变量，它又清晰又快，我们来看一个例子：
+         */
+    var jQuery,YAHOO;
+    jQuery = YAHOO = {};
+    (function($, YAHOO){
+        //在闭包内使用传递进来的全局变量
+    }(jQuery,YAHOO));
+
+    //不过，有时候可能不仅仅要使用全局变量，而是也想声明全局变量，
+    // 如何做呢？我们可以通过匿名函数的返回值来返回这个全局变量，
+    // 这也就是一个基本的Module模式，来看一个完整的代码
+
+     var blogModule = (function(){       //module模式
+        var my = {}, privateName = '博客园'; //内部变量
+        function privateAddTopic(data){  //内部私有函数
+            //这里内部处理函数
+        }
+        my.Name = privateName;         //声明全局变量 公开部分
+        my.AddTopic = function(data){
+            privateAddTopic(data);
+        };
+         return my;
+     }());
+//上面的代码声明了一个全局变量blogModule，
+// 并且带有2个可访问的属性：blogModule.AddTopic和blogModule.Name
+// ，除此之外，其它代码都在匿名函数的闭包里保持着私有状态。
+// 同时根据上面传入全局变量的例子，我们也可以很方便地传入其它的全局变量。
+
+    /*
+     Module模式的一个限制就是所有的代码都要写在一个文件，
+     但是在一些大型项目里，将一个功能分离成多个文件是非常重要的，
+     因为可以多人合作易于开发。再回头看看上面的全局参数导入例子，
+     我们能否把blogModule自身传进去呢？
+     答案是肯定的，我们先将blogModule传进去，添加一个函数属性，
+     然后再返回就达到了我们所说的目的，上代码：
+     */
+    //1.先声明blogModule
+    var blogModule = { name : 'cluo' };
+    //2.调用扩展函数
+        var blogModule = (function(my){ //用module模式 扩展blogModule
+            my.AddPhoto = function(){
+               //添加内部代码
+                console.log('add photo')
+            };
+            return my;
+        }(blogModule));
+        blogModule.AddPhoto();
+
+
+    //松耦合扩展 这样做的好处 是不用事先声明blogModule
+        var blogModule  = (function(my){
+            //添加一些功能
+            return my;
+        }(blogModule || {}));
+        //通过这样的代码，每个单独分离的文件都保证这个结构，那么我们就可以实现任意顺序的加载，
+        // 所以，这个时候的var就是必须要声明的，因为不声明，其它文件读取不到哦。
+
+    //紧耦合扩展
+     var blogModule = (function(my){
+         var oldAddPhotoMethod = my.AddPhoto;
+         my.AddPhoto = function() {
+             //重载方法，依然可以通过oldAddPhotoMethod 调用旧方法
+         };
+         return my;
+     }(blogModule));
+        //过这种方式，我们达到了重载的目的，
+        // 当然如果你想在继续在内部使用原有的属性，你可以调用oldAddPhotoMethod来用
+
+    //克隆与继承
+    var blogModule = (function(old){
+       var my = {},
+               key;
+       for (key in old){
+           if(old.hasOwnProperty(key)){
+               my[key] = old[key];
+           }
+       }
+        var oldAddPhotoMethod = old.AddPhoto;
+        my.AddPhoto = function(){
+            //克隆以后，再进行重写 ，当然也可以继续调用oldAddPhotoMethod
+        };
+        return my;
+    }(blogModule));
+        //这种方式灵活是灵活，但是也需要花费灵活的代价，
+        // 其实该对象的属性对象或function根本没有被复制，
+        // 只是对同一个对象多了一种引用而已，所以如果老对象去改变它，
+        // 那克隆以后的对象所拥有的属性或function函数也会被改变，
+        // 解决这个问题，我们就得是用递归，但递归对function函数的赋值也不好用，
+        // 所以我们在递归的时候eval相应的function。不管怎么样，
+        // 我还是把这一个方式放在这个帖子里了，大家使用的时候注意一下就行了。
+
+    var blogModule  = (function(my) {
+        var _private = my._private = my._private || {};
+        _seal = my._seal = my._seal || function(){
+            delete my._private;
+            delete my._seal;
+            delete my._unseal;
+        };
+        _unseal = my._unseal = my._unseal || function () {
+            my._private = _private;
+            my._seal = _seal;
+            my._unseal = _unseal;
+        };
+        return my;
+    }(blogModule || {}));
+    //任何文件都可以对他们的局部变量_private设属性，
+    // 并且设置对其他的文件也立即生效。
+    // 一旦这个模块加载结束，应用会调用 blogModule._seal()"上锁"，这会阻止外部接入内部的_private。
+    // 如果这个模块需要再次增生，应用的生命周期内，任何文件都可以调用_unseal() ”开锁”，
+    // 然后再加载新文件。加载后再次调用 _seal()”上锁”。
+
+    //子模块
+    blogModule.CommentSubModule = (function(){
+       var my = {};
+       // ..
+        return my;
+    }());
+
+
+
+
+    </script>
+</head>
+<body>
+<span id="eq"></span>
+</body>
+</html>

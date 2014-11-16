@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>javascript 字符串转数字</title>
+    <script>
+        //不可省略pareInt的第二参数
+    var month = "06",
+        year = "09";
+    month = parseInt(month,'10'); //6 返回10进制
+    year = parseInt(year, '10'); //9 返回10进制
+    console.log(month, year);
+   //反面教材
+        var month = "06",
+                year = "09";
+     var month = parseInt(month); //0被当作是8进制
+     var year = parseInt(year);
+     console.log(month,year);
+    //字符串转数字
+    var int8 = +"08";  //比parseInt快
+        console.log(int8);
+    var int8 = Number("08"); //比parseInt快
+        console.log(int8);
+
+
+
+    </script>
+</head>
+<body>
+
+</body>
+</html>

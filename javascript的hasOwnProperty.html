@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>javascript枚举</title>
+    <script>
+      var man = {
+          hands:2,
+          legs:2,
+          headers:1
+      };
+      if(typeof Object.prototype.clone === 'undefined'){ //super类 扩展了原型 整个原型链都受影响
+          Object.prototype.clone = function(){
+              console.log('clone');
+          };
+      }
+      man.clone(); //clone 父类原型扩展了
+
+    //遍历所有
+      for (var i in man){
+          console.log(i,':',man[i]); //返回的属性成员 原型链上继承而来的 成员
+      }
+
+    //避免返回原型继承的方法
+    //1
+        for (var i in man) {
+            if (man.hasOwnProperty(i)){
+                console.log(i, ':', man[i]);
+            }
+        }
+
+     //2
+        for (var i in man){
+            if (Object.prototype.hasOwnProperty.call(man,i)) {
+                console.log(i, ':', man[i]);
+            }
+        }
+     //3
+        var i, hasOwn = Object.prototype.hasOwnProperty;
+        for(var i in man){
+            if(hasOwn.call(man, i)) {
+                console.log(i,':',man[i]);
+            }
+        }
+      //扩展原型的时机 1.与其ECMAScript和javascript将来要实现的方法  ，2检查自定义属性或者方法不存在时 ，3，清楚文档记录和团队交流
+        if(typeof Object.prototype.myMethod !== 'function'){
+            Object.prototype.myMethod = function(){
+              //实现。。。
+            };
+        }
+
+
+    </script>
+</head>
+<body>
+
+</body>
+</html>
